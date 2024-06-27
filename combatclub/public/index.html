@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Usuarios</title>
+    <!-- Agregar Google Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap">
+    <link rel="stylesheet" href="cucu.css">
+    <style>
+        /* Estilos globales */
+        body {
+            font-family: 'Roboto Mono', monospace;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        /* Encabezados */
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Formularios */
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        form input[type="text"]:hover,
+        form input[type="email"]:hover,
+        form input[type="password"]:hover {
+            border-color: #888;
+        }
+
+        form button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        form button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        form button[type="submit"]:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Estilos específicos para la lista de usuarios */
+        #listaUsuarios {
+            list-style-type: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        #listaUsuarios li {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos para el botón de volver */
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            border-radius: 4px;
+        }
+
+        .back-button:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Estilos para la información del usuario */
+        #usuarioInfo {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .vigente {
+            color: green;
+        }
+
+        .no-vigente {
+            color: red;
+        }
+
+        /* Estilos para errores */
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Media queries para responsividad */
+        @media (max-width: 768px) {
+            form {
+                padding: 10px;
+            }
+
+            form input[type="text"],
+            form input[type="email"],
+            form input[type="password"] {
+                font-size: 14px;
+            }
+
+            form button[type="submit"] {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .back-button {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            #usuarioInfo {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.history.back()">Volver</button>
+
+    <div class="container">
+        <h1>Buscar Usuario por Código</h1>
+        <form id="buscarForm">
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="text" id="buscarCodigo" placeholder="Código" required>
+            <button type="submit">Buscar</button>
+        </form>
+        <div id="usuarioInfo" class="usuario-info"></div>
+
+        <h1>Registro de Usuarios</h1>
+        <form id="registroForm">
+            <input type="text" id="nombreRegistro" placeholder="Nombre" required>
+            <input type="email" id="emailRegistro" placeholder="Email" required>
+            <input type="text" id="codigoRegistro" placeholder="Código" required>
+            <input type="password" id="contrasenaRegistro" placeholder="Contraseña" required>
+            <button type="submit">Registrar</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registroForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const nombre = document.getElementById('nombreRegistro').value;
+            const email = document.getElementById('emailRegistro').value;
+            const codigo = document.getElementById('codigoRegistro').value;
+            const contrasena = document.getElementById('contrasenaRegistro').value;
+
+            const fechaRegistro = new Date().toISOString().split('T')[0];
+            const fechaVencimiento = new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0];
+
+            try {
+                const response = await fetch('/usuarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre, email, codigo, contrasena, fechaRegistro, fechaVencimiento })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Usuario registrado con éxito');
+                    // Puedes agregar alguna otra acción si lo necesitas
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (error) {
+                alert('Error registrando usuario');
+            }
+        });
+
+        document.getElementById('buscarForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const codigo = document.getElementById('buscarCodigo').value;
+
+            try {
+                const response = await fetch(`/usuarios/${codigo}`);
+                const usuario = await response.json();
+                const usuarioInfo = document.getElementById('usuarioInfo');
+                if (usuario.error) {
+                    usuarioInfo.textContent = usuario.error;
+                    usuarioInfo.className = 'error';
+                } else {
+                    const hoy = new Date().toISOString().split('T')[0];
+                    const vigente = new Date(usuario.fechaVencimiento) >= new Date(hoy);
+                    let comentarioPago = '';
+                    if (usuario.membresiaPagada) {
+                        comentarioPago = 'MEMBRESIA PAGADA';
+                    }
+                    let estadoPago = usuario.alCorriente ? 'FALTA PAGAR MENSUALIDAD' : '<strong>AL CORRIENTE CON LOS PAGOS </strong>';
+                    usuarioInfo.innerHTML = `<h2>Detalles del Usuario</h2>
+                                             <p><strong>Nombre:</strong> ${usuario.nombre}</p>
+                                             <p><strong>Email:</strong> ${usuario.email}</p>
+                                             <p><strong>Fecha de Registro:</strong> ${usuario.fechaRegistro}</p>
+                                             <p><strong>Fecha de Vencimiento:</strong> ${usuario.fechaVencimiento}</p>
+                                             <div>${comentarioPago}</div>
+                                             <div>${estadoPago}</div>`;
+                    usuarioInfo.className = vigente ? 'vigente' : 'no-vigente';
+                }
+            } catch (error) {
+                const usuarioInfo = document.getElementById('usuarioInfo');
+                usuarioInfo.textContent = 'Error buscando usuario';
+                usuarioInfo.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>
